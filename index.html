@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<title>synced clock</title>
+
+<style>
+    .clocks { font-family: monospace }
+    .clock { font-size: 117%;  }
+    #kwTheClock { font-size: 140%; font-weight: bold; }
+    .corrs	 { font-size: 120%; }
+    #nativeClock { opacity: 0.8;  }
+    allElse     { margin-top: 3ex }
+    resybrs     { padding-left: 3ex }
+    .tar { text-align: right }
+
+    .beats { width: 2ex; padding: 1ex; visibility: hidden; font-weight: bold; font-size: 140%; font-family: monospace }
+    #beat0 { font-size: 300% }
+    #beatPar { display: none }
+
+</style>
+
+<script src='js/kwClockGeneral.js'></script>
+<script id='kwClockSynced.js'></script>
+<script src='js/kwClockSyncedSafeInvoke.js'></script> <!-- execution begins in this js file -->
+
+</head>
+<body>
+    <div id='beatPar'>
+	<span id='beat0' class='beats'>1</span>
+	<span id='beat1' class='beats'>2</span>
+	<span id='beat2' class='beats'>3</span>
+	<span id='beat3' class='beats'>4</span>
+	<span id='beat4' class='beats'>5</span>
+	<span id='beat5' class='beats'>6</span>
+        <span id='beat6' class='beats'>7</span>
+        <span id='beat7' class='beats'>8</span>
+    </div>
+
+    <div class='clocks'>
+	<table>
+	    <tr><td id='kwTheClock' class='clock' data-show_ms='1' data-local_until_sync='0'></td><td>corrected time</td></tr>
+	    <tr><td id='adClock'     class='clock'></td><td>after-display time</td></tr>
+	    <tr><td id='nativeClock' class='clock'></td><td>un-corrected time</td></tr>
+	</table>
+    </div>
+    <div>beats: 
+        <input type='radio' value='0' name='nbeats' data-kwclsy='beatChEle' checked='checked' /><label>0</label>
+	<input type='radio' value='1' name='nbeats' data-kwclsy='beatChEle'                   /><label>1</label>
+	<input type='radio' value='2' name='nbeats' data-kwclsy='beatChEle'                   /><label>2</label>
+	<input type='radio' value='4' name='nbeats' data-kwclsy='beatChEle'                   /><label>4</label>
+	<input type='radio' value='6' name='nbeats' data-kwclsy='beatChEle'                   /><label>6</label>
+	<input type='radio' value='8' name='nbeats' data-kwclsy='beatChEle'                   /><label>8</label>    
+    </div>
+    <div id='allElse'>
+	<table>
+	    <caption></caption>
+	    <tr><td id='iicorr' class='tar'></td><td>ms: internal err (inst.)</td></tr>	    
+	    <tr><td id='icorr' class='tar'></td><td>ms: internal err (avg.)</td></tr>
+	    <tr><td id='nativeError' class='tar'></td><td>ms: error from server</td></tr>
+	    <tr><td id='spings' class='tar'></td><td>number of server polls</td></tr>
+	    <tr><td id='sdd' class='tar'></td><td>ms: standard deviation of error</td></tr>
+	    <tr><td id='ci1' class='tar'></td><td>ms (<span id='accus'></span>&#181;s) - t serv acc (chrony)</td></tr>
+	    <tr><td id='ciat' class='tar'></td><td>s: chrony info as of s ago</td></tr>
+	    <tr><td id='lsat' class='tar'></td><td>s: last sync s ago</td></tr>
+	</table>
+	
+	<div>
+	    <button id='resyb'  style='visibility: hidden' >resync - more data</button>
+	    <span id='resybrs'>
+	    <button id='resybr' style='visibility: hidden' >resync - reset data</button>
+	    </span>
+	</div>
+    </div>
+</body>
+</html>

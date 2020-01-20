@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<title>JavaScript web clock documentation</title>
+
+<style>
+    body { font-family: sans-serif }
+    h1 { font-size: 130% }
+    h3 { font-size: 110%; margin-bottom: 0.2ex; margin-top: 1.8ex }
+    p  { margin-top: 0.5ex}
+    .hdate { padding-left: 2ex; font-size: 90% }
+</style>
+
+</head>
+<body>
+
+    <h1>Network time synchronized JavaScript clock / widget<br/>
+        by Kwynn Buess  <span class='hdate'>2020, January</span></h1>
+    
+    <p><a href='https://kwynn.com/t/9/12/sync/'>Currently running on kwynn.com</a></p>
+
+    <p>
+This is a client-side JavaScript web application that displays a clock that should be accurate to roughly 20ms.
+Essentially I'm competing with or offering an alternative to <a href='https://time.gov/widget/widget.html'>NIST widget</a> 
+<span style='padding-left: 1ex; padding-right: 1ex'>or</span> 
+<a href='https://www.time.gov/'>NIST main time page</a>. See "Motivation / History" below.
+    </p>
+
+    <h3>OVERVIEW ON HOW IT WORKS</h3>
+
+    <p>
+The hard part is on the client (JavaScript) side, but there is some PHP involved.  The widget AJAX-calls the server first for "chrony" info (see 
+below) and then it polls the server a number of times for the time.  If all goes well, the user gets an accurate time and optionally a bunch of 
+info on how accurate the time is.</p>
+
+    <h3>BROWSER COMPATIBILITY ISSUES</h3>
+
+    <p>
+I thought such things were so 2008 (got much better a little after that), but welcome back to the 2020 edition of browser compatibility issues.  
+When I started the second version (see history below), encapsulation was an issue, so I read up on JavaScript classes.  I read the Mozilla 
+Developer Network (MDN) documentation of classes.  In the past I've only had issues with Firefox being somewhat ahead of the standard.  
+this time it's behind.  </p>
+
+    <p>
+Earlier versions included private class fields / variables.  Those are really not well supported, and removing those was pretty much a matter of search 
+and replace '#' to '', so I did that.  Beyond that, I utterly refuse to go backwards in the standard, so I am sticking with public class fields / 
+variables.  You can see the somewhat grim compatibility matrix at <a href='https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes'>MDN on 
+classes</a>. Read it and weep.   </p>
+
+    <p>   My search was not exhaustive, but it doesn't even seem that private variables are in Firefox's pipeline.  Read it and gnash teeth.</p>
+    <p>
+I tried to make sure the system would still show *a* clock if not synchronized, in the event of zero public field support.  That's why I have 
+a "SafeInvoke" JS file.  </p>
+
+<h3>
+    SIMPLE.HTML or simple.html</h3>
+
+    <p>
+        The index has the "complex" version with all the readouts.  The simple version is the minimal invocation.</p>
+
+    <h3>EXECUTION NARRATIVE / OVERVIEW</h3>
+  
+    <p>Execution begins in (what I call at the moment) the "Safe Invoke" JS file. In the event of a compatible browser, that code invokes the 
+        "on tick" object (currently) at the top of the ...Synced.js file.  That object uses a display object, a "do tick" object, a network 
+        / sync object, and an internal error / correction object. The internal and external (network) objects use a statistics object for average 
+        and standard deviation.
+</p>
+
+<code>Function(testClassString)();</code>
+
+<p>This is an alternative to eval() that lets me test for public field support.  See 
+    <a href='https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval#Never_use_eval!'>MDN on "never use eval"</a>.
+
+<p>
+    If public fields aren't supported, the "Function" throws an exception.  If they are, we can safely load the JS file that contains public fields.</p>
+<p>
+Note the JS file "onload" and the window "onload." You have to wait for both.  With one the classes don't exist yet; with the other the HTML clock 
+element id(s) don't exist yet.</p>
+<p>
+    If there is an exception we fall back to functions that tick a local (client-side) clock with no sync.  </p>
+
+
+<h3>CHRONY</h3>
+<p>
+    Chrony is a Network Time Protocol implementation / system.  In Ubuntu Linux, it's installed with:</p>
+<code>
+    $ sudo apt install chrony</code>
+<p>[... for reference: ] chrony is already the newest version (3.2-4ubuntu4.2). [as of "Thu Jan 16 22:29:04 EST 2020"]</p>
+
+<p>
+    Note that in Ubuntu you may have to / better disable the default Ubuntu timekeeping service:</p>
+<code>
+    $ sudo systemctl disable systemd-timesyncd</code>
+<p>Otherwise timesyncd was "killing" chrony at reboot.</p>
+
+<p>timesyncd does not claim to be as accurate as NTP, but I may have decided it was good enough except for:</p>
+
+<ul>
+    <li><a href='https://aws.amazon.com/blogs/aws/keeping-time-with-amazon-time-sync-service/'>Amazon Web Services (AWS) recommends chrony</a> 
+        as a way to take advantage of their time service.
+    </li>
+    <li>It gives very simple-to-access and thorough feedback on its own health with <br/>
+        <code>$ chronyc tracking    [no root / sudo necessary, even www-data can access it just fine]</code></li>
+</ul>
+
+<p>See sample output further below.</p>
+
+<p>
+I need to experiment again, but, as I remember, timesyncd was accurate to around 10ms and chrony is usually accurate to within a few microseconds 
+on AWS.  </p>
+
+<h3>IS AWS? / "isAWS"</h3>
+
+<p>
+My raw chrony info includes tests for whether the server is on AWS (more below).  If it is, and chrony is syncing to "169.254.169.123," 
+that explains the very accurate time numbers.   A server such as Kwynn.com is getting time signals from a very close source in terms of both physical 
+and network distance. The AWS time server is almost certainly in the same building. Network distance is usually on the order of 0.1 - 0.2ms.  Also, 
+the AWS region "us-east-1" is in northern Virginia, which is very close to the NIST time server in Gaithersburg, Maryland, US.  I would have thought 
+that AWS has their own atomic receivers or clocks, but apparently not, as I describe just below.</p>
+
+<p>
+The AWS time server is stratum 3, where 1 is a computer with an atomic clock attached.  However, given the above, the very accurate times 
+that chrony reports are believable.  When chrony displays stratum 4, I am almost certain that's "my" stratum, not the one above me.
+</p>
+
+<p>
+I say the "raw chrony info" because you'd have to see it over the network or as a variable (currently "self.chronyi = JSON.parse(xhr.response);").  
+Displaying that info is left as an exercise to the reader.</p>
+
+<h4>Is AWS? by crypto signature</h4>
+
+<p>I got carried away and went so far as to do the cryptographic test of whether I'm on AWS. More details below.
+    
+</p>
+
+<h3>MOTIVATION / HISTORY</h3>
+
+<p>From memory, this started in mid-November, 2019.  At some point I'll track down the first attempts.</p>
+
+<p>
+If the time.gov / NIST widget worked easily, I might have been happy with it.  I don't remember how long I spent trying to get it to work--less 
+than an hour, I think, and more than half an hour.  I got the very basics to work, but I didn't get all the features.  Also, the code was 
+minimized.  I didn't look too hard for dev / "maximized" code; maybe it's out there.  Given that it was minimized, it was harder to trace 
+with Chrome Developer Tools (or the equivalent).</p>
+
+<p>
+So I decided to try for myself.  Also, I wanted more readouts / info than the NIST apps offer.  Then it became a challenge when I did just about 
+everything wrong that I could, several times over.  I found that keeping track of signs (+ or -) and keeping track of the basics of what I was 
+doing was a challenge--more so than many other projects.  So then it became a matter of "if it's the last thing I do."  At one point I swept the 
+slate clean and started over.  The new version used JavaScript classes, and that second version is still similar to what I have now.</p>
+
+<h3>CHRONY OUTPUT</h3>
+
+<pre>
+$ chronyc tracking
+Reference ID    : A9FEA97B (169.254.169.123)
+Stratum         : 4
+Ref time (UTC)  : Fri Jan 17 03:22:28 2020
+System time     : 0.000004590 seconds slow of NTP time
+Last offset     : -0.000010681 seconds
+RMS offset      : 0.000035949 seconds
+Frequency       : 1.564 ppm slow
+Residual freq   : -0.002 ppm
+Skew            : 0.043 ppm
+Root delay      : 0.000533058 seconds
+Root dispersion : 0.001077776 seconds
+Update interval : 1032.8 seconds
+Leap status     : Normal
+</pre>
+
+<h3>isAWS DETAILS</h3>
+
+<ul>
+    <li><a href='https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/identify_ec2_instances.html'>AWS "Identify EC2 Linux Instances"</a>--how to figure 
+    out programmatically if you're within AWS</li>
+    <li><a href='https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html'>AWS "Retrieving Instance Metadata"</a>
+         programmatically</li>
+    <li><a href='https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-identity-documents.html'>AWS "Instance Identity Documents"</a>--
+        cryptographically verifying you're in AWS.
+    </li>
+</ul>
+
+<code>
+    $ /usr/bin/wget -q -O - http://169.254.169.254/latest/meta-data/placement/availability-zone</code>
+<p>us-east-1[x]</p>
+
+
+<h3>TO DO</h3>
+
+<p>Finish documentation, such as for the display object.  I'm sure there is plenty more, but it's time to release something.
+    
+</p>
+
+<h3>NOTES TO SELF / "INTERNAL" TO DO</h3>
+
+<p>Remember to fully harmonize sntp chrony and this: hard links both dev and AWS.  ?getOffsetOnly.  Perhaps move from chrony to getChrony.
+</p>
+
+
+<h3>CREDITS</h3>
+
+<ul>
+    <li>clock display starting from <a href='https://codepen.io/afarrar/pen/JRaEjP'><i>Digital Clock in JavaScript: A [CODE]PEN</i> by Aaron Farrar</a>, 
+        latest retrieval 2020/01/17 11:17pm EST</li>
+</ul>
+
+<h3>THIS FILE HISTORY</h3>
+
+<ul>
+    <li>01/20 4:42pm - created GitHub repo and getting ready to commit.</li>
+    <li>starting 2020/01/16 10:00pm EST (America/New_York timezone; GMT/UTC -5)</li>
+</ul>
+
+
+<div style='margin-top: 2ex'>
+    <a href="http://validator.w3.org/check?uri=referer"><img
+        src="https://kwynn.com/t/5/02/html5_valid.jpg"
+        alt="HTML5 valid" width="103" height="36" /></a>
+</div>
+
+</body>
+</html>
