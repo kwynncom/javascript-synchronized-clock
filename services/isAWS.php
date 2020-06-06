@@ -1,5 +1,10 @@
 <?php
 
+// Kwynn 2020/01/25 9:10pm - goes to "is kwynn.com?" or at least a start
+// echo Q | openssl s_client -showcerts -connect 127.0.0.1:443 2>/dev/null | grep 'CN = kwynn\.com'
+// if use whole output, then "Verify return code: 0 (ok)" MIGHT be definitive
+
+
 $tfn = 'kwutils.php';
 if (file_exists($tfn)) require_once('kwutils.php');
 else require_once('/opt/kwynn/' . $tfn); unset($tfn);

@@ -392,7 +392,7 @@ class kwclsyDetailedDisplay {
 	
 	if (!iin) iin = 0;
 	
-	if (!this.beats || !this.beats[iin]) return;
+	if (!this.beates || !this.beates[iin]) return;
 	
 	this.beates[iin].style.visibility = 'visible';
 	const self = this;

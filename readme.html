@@ -188,6 +188,31 @@ Leap status     : Normal
 <p>us-east-1[x]</p>
 
 
+<h3>GitHub commands</h3>
+
+<p>The following is what you do from the local repo to sync it, or one way to do it.  
+    I cloned to an empty directory then moved stuff into my pre-existing directory.  
+    This assumes you've already set up SSL / SSH, which I had.  The "git remote..." command was the slgitly hard one to find.  The documentation on 
+    SSL / SSH is pretty good.
+    </p>
+
+   
+    <pre>
+git clone https://github.com/kwynncom/javascript-synchronized-clock.git ./jsc
+cd jsc
+mv .git ../sync
+mv README.md ../sync
+cd ..
+rmdir jsc
+cd sync
+git add -A .
+git commit -m "first commit of code itself"
+ssh-agent
+ssh -T git@github.com
+git remote set-url origin git@github.com:kwynncom/javascript-synchronized-clock.git
+git push
+    </pre>
+
 <h3>TO DO</h3>
 
 <p>Finish documentation, such as for the display object.  I'm sure there is plenty more, but it's time to release something.
