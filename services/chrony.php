@@ -1,6 +1,6 @@
 <?php // Kwynn Buess, kwynn.com, 2020/01/18 6:25pm my local
 
-require_once('kwutils.php');
+require_once('/opt/kwynn/kwutils.php');
 
 class chrony_parse { // see "$ chronyc tracking" output and other doc at bottom
 

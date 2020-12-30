@@ -4,10 +4,7 @@
 // echo Q | openssl s_client -showcerts -connect 127.0.0.1:443 2>/dev/null | grep 'CN = kwynn\.com'
 // if use whole output, then "Verify return code: 0 (ok)" MIGHT be definitive
 
-
-$tfn = 'kwutils.php';
-if (file_exists($tfn)) require_once('kwutils.php');
-else require_once('/opt/kwynn/' . $tfn); unset($tfn);
+require_once('/opt/kwynn/kwutils.php');
 
 class isAWSCmds { // see hu(man) message just below, and see
     // https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-identity-documents.html
@@ -48,7 +45,7 @@ CHMONE;
 	$iam = '  "InstanceProfileArn" : "arn:aws:iam::123456789012:instance-profile/abcd-ef"';
 
 	$a = [
-	    ['/sys/hypervisor/uuid' , '/^(ec2)[a-f0-9-]{33}/', 'ec2223bc-f551-9e51-1d63-123456789abc'],
+	    // ['/sys/hypervisor/uuid' , '/^(ec2)[a-f0-9-]{33}/', 'ec2223bc-f551-9e51-1d63-123456789abc'],
 	    [isAWSCmds::gsc('iam/info'), '/  "InstanceProfileArn" : "(arn:aws:iam::)\d{12}/', $iam],
 	    /* [isAWSCmds::gsc('ami-id')  , self::amire, 'ami-12345678'], // redundant, but I leave them for reference
 	    [isAWSCmds::gsc('placement/availability-zone')  , self::razre, 'us-east-1x'] */
