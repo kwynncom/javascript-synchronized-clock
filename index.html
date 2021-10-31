@@ -19,6 +19,8 @@
     .beats { width: 2ex; padding: 1ex; visibility: hidden; font-weight: bold; font-size: 140%; font-family: monospace }
     #beat0 { font-size: 300% }
     #beatPar { display: none }
+	#foot10 { margin-top: 4ex; }
+	.footch10 { margin-bottom: 1.99ex; }
 
 </style>
 
@@ -28,6 +30,7 @@
 
 </head>
 <body>
+	<div> <!-- whole clock -->
     <div id='beatPar'>
 	<span id='beat0' class='beats'>1</span>
 	<span id='beat1' class='beats'>2</span>
@@ -74,5 +77,10 @@
 	    </span>
 	</div>
     </div>
+	</div> <!-- whole clock -->
+	<div id='foot10'>
+		<div class='footch10'><a href='https://kwynn.com/t/21/10/chm/'>more server accuracy details</a></div>
+		<div class='footch10'><a href='https://github.com/kwynncom/javascript-synchronized-clock'>source code</a></div>
+	</div>
 </body>
 </html>
