@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta http-equiv='Content-Type' content='text/html; charset=UTF-8' />
+<meta name='viewport' content='width=device-width, initial-scale=1.0' />
+
+<title>clock - more info</title>
+
+<style>
+    body { font-family: sans-serif; }
+    p { margin-top: 1ex; margin-bottom: 1.3ex; }
+    h1 { margin-top: 0.3ex; margin-bottom: 0.7ex; font-size: 120%;      }
+    h2 { margin-top: 0.3ex; margin-bottom: 0.7ex; font-size: 115%;      }
+    ul { margin-top: 2vh; margin-bottom: 0.5ex; }
+    li { margin-bottom: 3vh; }
+    .htvp { margin-top: 5ex; font-size: 65%; }
+</style>
+</head>
+<body>
+    <p class='footch10'><a href='/'>home</a></p>
+    <section>
+        <h1>more info on my very accurate clock web app (and centralizing links)</h1>
+        
+        <ul>
+            <li><a href='/t/9/12/sync/'>the clock</a></li>
+            <li><a href='https://github.com/kwynncom/javascript-synchronized-clock'>source code</a> of clock</li>
+            <li><a href='/t/21/10/chm/'>more server accuracy details</a></li>
+            <li><a href='https://github.com/kwynncom/chrony-measurements'>source code</a> of accuracy details</li>
+            <li><a href='/t/21/12/apprentices_2021_12.html'>seeking software apprentices</a> - in the event you want a LOT more info</li>
+        </ul>
+        
+        <section>
+            <h2>my request to you for more info - why did this become so (relatively) popular in late December, 2021?</h2>
+            <p>In mid-December, I saw a number of DARPA LifeLog (Facebook) links to my clock.  Then on December 30, the clock was mentioned on a YouTube 
+                live chat and / or a YouTube video.  I can see that from my web server access logs, but my brief attempts to dig 
+                farther didn't go anywhere.  Around mid-day my time on December 30, something like 115 people used the clock.  A relatively 
+                lot of people have used it since.
+            </p>
+            <p>In what context was I mentioned on those platforms?  What was the video about?  
+                <a href='/t/3/02/Buess_resume.html'>My resume</a> has contact info including a 
+                brand new web message form.
+            </p>
+        </section>
+        
+        <section>
+            <h2>more on the "chm" / chrony measurements page</h2>
+            
+            <p><a href='https://chrony.tuxfamily.org/'>chrony</a> is an implementation of the 
+                <a href='https://en.wikipedia.org/wiki/Network_Time_Protocol'>Network Time Protocol</a>.  I use chrony to both keep 
+                accurate time on Kwynn.com and measure chrony's health / accuracy.  The clock has one chrony reading, but I have since 
+                learned that the reading I use isn't complete enough.  I've spent too much time geeking out on trying to understand chrony's readings.  
+                I eventually created the "chm" page to give sufficient readings to assess chrony's accuracy, and thus Kwynn.com's accuracy.  I get into the 
+                "chm" details further below.
+            </p>
+            
+            <p>I wrote chm to demonstrate that Kwynn.com is usually well under 0.1ms of accuracy relative to the 
+                <a href='https://tf.nist.gov/tf-cgi/servers.cgi'>Maryland NIST official time servers</a> / atomic clocks.  In early January, 2022, Kwynn.com lives at 
+                AWS EC2 "us-east-1a" in northern Virginia.  I have several reasons to suspect it's near Ashburn, VA, so it's roughly 18 miles from the NIST servers in 
+                Gaithersburg, MD.  My chrony config is set to use the 
+                <a herf='https://aws.amazon.com/blogs/aws/keeping-time-with-amazon-time-sync-service/'>Amazon Time Sync Service</a>.  I just did an SNTP "ping":</p>
+            <pre>$ wrap.php 169.254.169.123 
+[1641858287190021095,1641858287190249556,1641858287190267061,1641858287190379570] 
+            </pre>
+            <p>"wrap" is part of <a href='https://github.com/kwynncom/sntp-client'>one of my SNTP clients</a>.  The times are nanosecond 
+                <a href='https://en.wikipedia.org/wiki/Unix_time'>UNIX Epoch</a> that the request to 
+                the server was sent, the time received by the server, the time sent from the server, and the time received by "me."  The round trip is less than 0.4 ms, 
+                which is also what my "peer dispersion" (more below) shows in /var/log/chrony/measurements.log
+            </p>
+            
+            <p>As for NIST "ping":           </p>
+            <pre>$ wrap.php 2610:20:6f15:15::27 
+[1641858964082631363,1641858964085861986,1641858964085862937,1641858964088946573]
+            </pre>
+            
+            <p>or 6.3 ms.  (The $ is the Linux command prompt.  I am showing the command I'm running.)
+                
+            </p>
+            
+            <p>
+            In terms of reading your time--the time of the computer running the browser--my clock should be better than <a href='https://time.gov/'>NIST's client-side 
+                web clock</a>.  
+                For one, I'm nearly certain NIST only takes one sample--from reading the network traffic--and mine takes 15 by default and then lets you reset or add 
+                more readings.  I also give 
+                standard deviation numbers, and I account for the time that JavaScript takes to process (part of the internal error).
+                
+            </p>
+            
+            <p>Back to chm itself.  An NTP client polls or requests the time from a server.  The numbers are as above--client sent time, server receive, server send, and 
+                client receive time.  The correction between client and server is roughly if not precisely the average client times minus the average server times.  
+                Otherwise put, the client has no alternative but to assume that outgoing time versus incoming time are equal, although chrony does try to account for 
+                asymmetry such as a cell phone that sends at very low power versus receiving at relatively high power from a relatively powerful transmitter on a cell 
+                phone tower. The server sends both its own receive and send time to try to account for its own processing time.  The calculation assumes that the 
+                relevant time reading is precisely between receive and send.  Thus, if the average of send and receive on the client side minus the average on the 
+                server side is zero, the client is assumed to be in perfect sync with the server.
+            </p>
+            <p>
+                
+                A statistical model is used to determine which of these polls are valid and which 
+                should be thrown out.  This model is in large part determined by the lowest round trip time because it is assumed to have the lowest possible jitter 
+                between outgoing and incoming time.  On my local machine, when I switch from wired internet to my cell phone's USB tether, the polls are usually 
+                considered invalid for hours or indefinitely.  
+                
+            </p>
+            <p>The active polls are the valid ones.  They are the points in the linear regression line that estimates the constant correction 
+                needed between the client and server.   
+                
+            </p>
+            
+            <p>Regarding "constant correction," that's most of what an NTP client does, as I'll explain: if you have a 3 GHz CPU clock, your system assumes that each clock 
+                tick is 0.333ns or 1 / (3 * 10^9)--if your clock runs at 3 billion cycles a second, each tick is 1 / 3 billion seconds.  (Note that in many programming 
+                languages / is division and * is multiplication, so I use that here.)  Chrony estimates your clock's deviation from a perfect 3 GHz and corrects the 
+                "wall clock" time versus the CPU clock time.  That is the "frcor" or frequency correction I list, which is in ppm or parts per millions.  That is, 
+                an frcor of 65 means that for every million seconds of clock time that passes, chrony is adjusting CPU time versus wall time by 65 seconds, or 
+                "a value of 1 ppm would mean that when the system’s clock thinks it has advanced 1 second, it has actually advanced by 1.000001 seconds relative to true 
+                time" from the <a href='https://www.mankier.com/1/chronyc'>chronyc man page</a> or $ man chronyc
+            </p>
+            
+            <p>Not coincidentally, <a href='https://github.com/kwynncom/nano-php-extension'>I wrote a PHP extension</a> that lets you read your CPU's tick count since boot, 
+                or you can use the C language which PHP ultimately does.
+                
+            </p>
+            
+            <p>So back to the chm readings, the active polls are the current points in the linear regression controlling the correction of the CPU clock versus the "wall" 
+                time.  Sometimes kwynn.com shows 6 - 9, and right now it's showing 18.  On one hand, the more polls / points the merrier, but I'd say poll span is more 
+                imporant, which is my next line in chm.  
+                
+            </p>
+            
+        </section>
+        
+    </section>
+</body>
+</html>
+
