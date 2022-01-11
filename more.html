@@ -54,10 +54,11 @@
             </p>
             
             <p>I wrote chm to demonstrate that Kwynn.com is usually well under 0.1ms of accuracy relative to the 
-                <a href='https://tf.nist.gov/tf-cgi/servers.cgi'>Maryland NIST official time servers</a> / atomic clocks.  In early January, 2022, Kwynn.com lives at 
+                <a href='https://tf.nist.gov/tf-cgi/servers.cgi'>Maryland NIST official time servers</a> / 
+                <a href='https://en.wikipedia.org/wiki/International_Atomic_Time'>atomic clocks</a>.  In early January, 2022, Kwynn.com lives at 
                 AWS EC2 "us-east-1a" in northern Virginia.  I have several reasons to suspect it's near Ashburn, VA, so it's roughly 18 miles from the NIST servers in 
                 Gaithersburg, MD.  My chrony config is set to use the 
-                <a herf='https://aws.amazon.com/blogs/aws/keeping-time-with-amazon-time-sync-service/'>Amazon Time Sync Service</a>.  I just did an SNTP "ping":</p>
+                <a href='https://aws.amazon.com/blogs/aws/keeping-time-with-amazon-time-sync-service/'>Amazon Time Sync Service</a>.  I just did an SNTP "ping":</p>
             <pre>$ wrap.php 169.254.169.123 
 [1641858287190021095,1641858287190249556,1641858287190267061,1641858287190379570] 
             </pre>
@@ -96,7 +97,8 @@
             <p>
                 
                 A statistical model is used to determine which of these polls are valid and which 
-                should be thrown out.  This model is in large part determined by the lowest round trip time because it is assumed to have the lowest possible jitter 
+                should be thrown out.  This model is in large part determined by the lowest round trip time because it is assumed to have the lowest possible 
+                difference 
                 between outgoing and incoming time.  On my local machine, when I switch from wired internet to my cell phone's USB tether, the polls are usually 
                 considered invalid for hours or indefinitely.  
                 
@@ -121,10 +123,93 @@
             </p>
             
             <p>So back to the chm readings, the active polls are the current points in the linear regression controlling the correction of the CPU clock versus the "wall" 
-                time.  Sometimes kwynn.com shows 6 - 9, and right now it's showing 18.  On one hand, the more polls / points the merrier, but I'd say poll span is more 
-                imporant, which is my next line in chm.  
+                time.  Sometimes kwynn.com shows 6 - 9, and right now it's showing 18.                 
+                On one hand, the more polls / points the merrier, but the poll span is also 
+                important, which is my next line in chm.  The <a href='https://datatracker.ietf.org/doc/html/rfc5905'>official NTP protocol</a> says, "The non-linear 
+                loop described below [develops an accurate measurement] in 15 minutes" (page 48).  
+            </p>
+            
+            <p>I have kwynn.com set to "iburst" in /etc/chrony/chrony.conf, which is an "initial burst" of polling--when it starts, the client polls very often for 
+                30 - 60 seconds before slowing down to steady state.  As for the steady state, kwynn.com is set to whatever the default is.  My observation is that 
+                with a good connection or a great connection such as kwynn.com has, the time is accurate within a handful of polls (5 or 6) as the root dispersion (below)
+                and residual frequency (below) go down.  But it takes 15 minutes to more confidently distinguish network asymmetry from clock error.  The clock has to run 
+                for a certain amount of time before the precise variation in time is determinable.
+            </p>
+            
+            <p>So the "poll span" is the age of the oldest to newest active poll.  Obviously the less time since the last poll the better, which is my next line in chm.  
+                Now that I think about it, I'm pretty sure the default maximum poll interval is 1,024 seconds or 17 minutes, so hopefully kwynn.com never gets higher than that.
+                            </p>
+
+            <p>"0.034840 ms offset - last poll" is the latest reading / correction / error from the AWS (in my case) server.  Completely outside of chrony, my code 
+                makes a poll to the NIST servers, so I show that reading.  As you see at the above NIST link, they caution to never poll more often than 4s, and my code 
+                exponentially backs off from 4 seconds, so that's why you won't see a new NIST poll upon every refresh.
+            </p>
+            
+            <p>Note that I don't remember which sign I'm using for fast and slow. I tend to use negative for kwynn.com being slow, but I'm almost certain the NTP 
+                protocol does it the opposite way to mean that the client is fast and thus the correction is negative.  I think I used it opposite NTP, but I'm not 
+                going digging.  (You can look at my code versus the NTP / SNTP spec.)
                 
             </p>
+            
+            <p>The "current est" is chrony's own estimate of the clock's accuracy.  It's not always 0 because chrony can only adjust the clock so quickly or 
+                time-sensitive applications (real time systems among others) would get very "confused" and start to malfunction.  For example, several 
+                <a href='https://www.vice.com/en/article/78kjva/An-extra-leap-second-in-2016-caused-a-mini-y2k'>systems crashed</a> during the last 
+                <a href='https://en.wikipedia.org/wiki/Leap_second'>leap second</a> 
+                that added a second at the end of December 31, 2016.  
+                </p>
+                
+                <p>Chrony's own estimate is useful to say that chrony is running, but in itself, as I hope I'm explaining in great detail, it's not meaningful in itself.
+                    Chrony will show very precise numbers with a highly asymmetric cell phone connection.  
+                    
+                </p>
+            
+            <p>"root disp" is root dispersion.  It's a statistical calculation of the quality of the time signal going all the way back to the root or the "official" 
+                atomic time.  I saw "all the way back" because NTP servers (and clients) come in "stratum."  Stratum 0 is the atomic clock itself.  Stratum 1 is the 
+                computer attached to it, such as the NIST servers.  The AWS server I read is a stratum 3, where I would assume that stratum 2 is either run by AWS or 
+                is perhaps a telecom's time server.  As I've said, though, as stratum 3 servers go, it's quite high quality.  
+            </p>
+            
+            <p>To elaborate, the root dispersion is a quality estimate at that moment.  The rd increases until the next poll, and then it might increase again in the 
+                case of a bad poll.  I don't show the "skew," but the skew is the largest possible error based on the latest poll--the skew is the unknowable between 
+                inconsistent network delay versus how much real time has passed.  The longer chrony has run, the easier it is to tell this difference.  I left 
+                the skew out because the root dispersion shows the effect of the skew at any given point.  (I would guess that root dispersion is skew times the elapsed 
+                time since the last poll.)
+            </p>
+            
+            <p>Root delay is (roughly) the best active round trip "ping" / delay time from kwynn.com to NIST or whatever the root is.  (I can't be sure NIST is the 
+                root.  An alternative is a well-calibrated GPS receiver, which is another source of atomic time.)
+                
+            </p>
+            
+            <p>Maximum error is the theoretical maximum error taking into account delay, dispersion, the latest correction, etc.  The calculation I used was higher than 
+                the official calculation--that is, I estimated more possible error.  With a good connection and after several good polls, that number becomes more and 
+                more theoretical.  After several polls over 15 minutes, the actual error should be much lower.  The maximum error assumes among other things total 
+                asymmetry between outgoing and incoming.
+                
+            </p>
+            
+            <p>Residual frequency goes back to the issue that chrony can only change the time so quickly.  It's one of the measures of the delay in changing the 
+                frequency correction / time.  The rf may go up after a poll.  If another poll does not intervene, the rf goes down quickly.  
+                I sometimes see a rf of 0.002 parts per million on kwynn.com, which I assume is still a great number.  When I first turn on chrony locally, I sometimes 
+                see 300 or 1,000 ppm.  
+                </p>
+                
+                <p>One of the uses of the "NTP server" table is to show whether or not the frequency correction changes.  No correction in itself may mean one of two 
+                    things.  It may mean that chrony is throwing it's hands up and staying with the last correction saved to disk, perhaps from a previous boot session.
+                    That is, chrony won't change the correction if the data isn't good enough.  Or a lack of change means that the polling is very stable.  Right now, 
+                    kwynn.com is only changing by 0.001 ppm.  Based on both the NTP server and NIST polls, that means that chrony is very happy.
+                  </p>
+                  
+                  <p>Note that a CPU clock's frequency changes based on temperature which in turn changes based on usage.  (Kwynn.com is a virtual machine, so that 
+                      would be my usage and everyone else's on the machine, perhaps dozens or 100s of VMs.)  I have seen reference in chrony to taking temperature into 
+                      account, but on my local machine, my brief attempts don't seen to do anything.  I haven't looked into it on kwynn.com.
+                      
+                  </p>
+                  
+                  <p>In the tables, "min" is elapsed minutes since the poll.  The most recent polls should be the same as their entries higher on the page; times are in 
+                      ms.
+                      
+                  </p>
             
         </section>
         
