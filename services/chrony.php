@@ -1,4 +1,4 @@
-<?php // Kwynn Buess, kwynn.com, 2020/01/18 6:25pm my local
+<?php
 
 require_once('/opt/kwynn/kwutils.php');
 
@@ -30,27 +30,12 @@ public static function get() {
 
     $a = self::getInternal();
     $ret = [];
-    $ret['raw'] = $a;
         
     $r = $a['Reference ID'];
     preg_match('/([0-9A-Z]+) \(([^\)]+)\)/', $r, $matches);
     kwas(isset($matches[2]) && $matches[2] && is_string($matches[2]) && strlen(trim($matches[2])) > 5, 'rID regex fail');
     
-    $sn = [];
-    $sn['rid'] = $matches[2];
-    
-    if (isAWS() && $sn['rid'] === '169.254.169.123') $sn['rname'] = 'AWS EC2 Time Sync Service';
-    else $sn['rname'] = '';
-    
-    $key = 'Ref time (UTC)';
-    kwas(isset($a[$key]), 'no UTC ref time');
-    
-    $ts = strtotimeRecent($a[$key] . ' UTC');
-    $sn['rts'] = $ts;
-    
-    $df = 'g:i:s A D m/j';
-    $sn['rr']  = date($df, $ts); unset($ts);
-    $sn['nr']  = date($df);
+	$rid = $matches[2];
     
     $st = $a['System time'];
     
@@ -82,10 +67,8 @@ public static function get() {
     $ret['basic'] = $b;
     $ret['status'] = 'OK';
 
-    $key = 'Update interval';
-    $sn[$key] = $a[$key];
 
-    $ret['kwsntp'] = $sn;
+    $ret['timeServer'] = $rid;
 
     return $ret;
      

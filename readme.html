@@ -112,7 +112,11 @@ element id(s) don't exist yet.</p>
 I need to experiment again, but, as I remember, timesyncd was accurate to around 10ms and chrony is usually accurate to within a few microseconds 
 on AWS.  </p>
 
-<h3>IS AWS? / "isAWS"</h3>
+<h3>IS AWS?</h3>
+
+<p>2022/01/18 - I am removing this feature for now, but I'll keep the details here.
+    
+</p>
 
 <p>
 My raw chrony info includes tests for whether the server is on AWS (more below).  If it is, and chrony is syncing to "169.254.169.123," 
@@ -171,7 +175,7 @@ Update interval : 1032.8 seconds
 Leap status     : Normal
 </pre>
 
-<h3>isAWS DETAILS</h3>
+<h3>is AWS DETAILS</h3>
 
 <ul>
     <li><a href='https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/identify_ec2_instances.html'>AWS "Identify EC2 Linux Instances"</a>--how to figure 
