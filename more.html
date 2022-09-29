@@ -10,12 +10,14 @@
     body { font-family: sans-serif; }
     p { margin-top: 1ex; margin-bottom: 1.3ex; }
     h1 { margin-top: 0.3ex; margin-bottom: 0.7ex; font-size: 120%;      }
-    h2 { margin-top: 2.0ex; margin-bottom: 0.7ex; font-size: 115%;      }
-    ul { margin-top: 2vh; margin-bottom: 0.5ex; }
-    li { margin-bottom: 3vh; }
+    h2 { margin-top: 2.0ex; margin-bottom: 0.7ex; font-size: 125%;      }
+    h3 { font-size: 101%; }
+    ul { margin-top: 1ex; margin-bottom: 0.5ex; }
+    li { margin-bottom: 1.5ex; }
     .htvp { margin-top: 5ex; font-size: 65%; }
     ol.phi li { margin-top: 0.1ex; margin-bottom: 1.0ex; }
     ol.phi    { margin-top: 1.0ex; }
+    .donaele { font-size: 115%; font-weight: bold; margin-top: 3ex; margin-bottom: 2.0ex; }
 </style>
 </head>
 <body>
@@ -24,49 +26,18 @@
     <h1>more info on my very accurate clock web app (and centralizing links)</h1>
 
     <ul>
+        <li class='donaele'>my hopefully <a href='/t/22/02/money_time.html'>gentle attempt</a> to 
+        make a tiny fraction of a crypto coin out of this, by hiring me and / or donating a tiny, tiny fraction of a Bit (updated with 
+        donation <a href='/t/22/02/donate.html'>crypto addresses</a>)</li>
         <li><a href='/t/9/12/sync/'>the clock</a></li>
-        <li><a href='https://github.com/kwynncom/javascript-synchronized-clock'>source code</a> of clock</li>
         <li><a href='/t/21/10/chm/'>more server accuracy details</a></li>
-        <li><a href='https://github.com/kwynncom/chrony-measurements'>source code</a> of accuracy details</li>
         <li><a href='/t/21/12/apprentices_2021_12.html'>seeking software apprentices</a> - in the event you want a LOT more info</li>
+        <li>source code - of the <a href='https://github.com/kwynncom/javascript-synchronized-clock'>clock</a> itself and the 
+            <a href='https://github.com/kwynncom/chrony-measurements'>more numbers</a> on accuracy page</li>
+        <li><a href='#olderh'>older entries</a> of this page</li>
     </ul>
 
-<section>
-    <h2>2022, January 18 - probably invisible clock change</h2>
-    
-    <p>This will only affect anyone who has been looking at the details of the network traffic with browser developer tools.  Rather than all the 
-        "chronyc tracking" readouts, I'm going to whittle it down to what's shown on the clock--"&lt; 1 ms (+3.186µs) - t serv acc (chrony)."  The 
-        entire chrony output will remain elsewhere in <a href='https://kwynn.com/t/20/10/timeserver/chronyraw.php'>raw form</a> and 
-        <a href='https://kwynn.com/t/20/10/timeserver/chronyParsed.php'>JSON</a>.  
-    </p>
-    
-    <p>I'm also going to get rid of all the "Is AWS?" stuff.  That will also have no affect on the user-level, front-end output of the clock.  Earlier 
-        today I created a "1.0" label on the source code linked above.  That was before this probable change.  In the unlikely event someone nearly as 
-        eggheaded as I am wants that data in that form, let me know.  My contact info and web form are linked from my resume, which is in turn linked 
-        from my home page above and is directly linked below.
-     </p>
-     
-     
-</section>
 
-
-        
-<section>
-    <h2>Welcome VeVe users! (2022, early January)</h2>
-
-    <p>In the original version of this page, I asked why the clock had become so (relatively) popular all of a sudden.  I got the following 
-        in response.  I'm paraphrasing a bit and anonymizing.  
-    </p>
-
-    <blockquote>I shared the link with the VeVe collectible crowd. They use it to time
-VeVe's NTF drops. I hope this is a good thing! -- DP
-    </blockquote>
-
-   <p>He's referring to <a href='https://www.veve.me/'>VeVe</a>.  Sure, it's a good thing.  I was just surprised that my fairly tiny web 
-       traffic became much bigger in proportion to "tiny."
-
-   </p>
-</section>
        
         <section>
             <h2>more on the "chm" / chrony measurements page</h2>
@@ -84,12 +55,17 @@ VeVe's NTF drops. I hope this is a good thing! -- DP
                 <a href='https://en.wikipedia.org/wiki/International_Atomic_Time'>atomic clocks</a>.  In early January, 2022, Kwynn.com lives at 
                 AWS EC2 "us-east-1a" in northern Virginia.  I have several reasons to suspect it's near Ashburn, VA, so it's roughly 18 miles from the NIST servers in 
                 Gaithersburg, MD.  My chrony config is set to use the 
-                <a href='https://aws.amazon.com/blogs/aws/keeping-time-with-amazon-time-sync-service/'>Amazon Time Sync Service</a>.  I just did an SNTP "ping":</p>
-            <pre>$ wrap.php 169.254.169.123 
-[1641858287190021095,1641858287190249556,1641858287190267061,1641858287190379570] 
-            </pre>
+                <a href='https://aws.amazon.com/blogs/aws/keeping-time-with-amazon-time-sync-service/'>Amazon Time Sync Service</a>.  I just did an 
+				SNTP "ping":</p>
+            <pre>$ sntp -nosleep
+1664428242415780704
+1664428242269000159
+1664428242269001318
+1664428242494034347
+2610:20:6f15:15::27 </pre>
+			
             <p>The $ is the Linux command prompt.  I am showing the command I'm running.  
-                "wrap" is part of <a href='https://github.com/kwynncom/sntp-client'>one of my SNTP clients</a>.  The times are the nanosecond 
+                "sntp" is <a href='https://github.com/kwynncom/sntp-client'>one of my SNTP clients</a>.  The times are the nanosecond 
                 <a href='https://en.wikipedia.org/wiki/Unix_time'>UNIX Epoch</a> times that the request to 
                 the server was sent, the time received by the server, the time sent from the server, and the time received by "me."  
                 The round trip is less than 0.4 ms, 
@@ -252,8 +228,47 @@ VeVe's NTF drops. I hope this is a good thing! -- DP
                
         
     </section>
+
+
+<section id='olderh'>
+    
+    <h2>older entries</h2>
+ 
     <section>
-    <h2>My request to you for more info: why did this become so (relatively) popular in late December, 2021? (solved as above: VeVe)</h2>
+    <h3>2022, January 18 - probably invisible clock change</h3>
+    
+    <p>This will only affect anyone who has been looking at the details of the network traffic with browser developer tools.  Rather than all the 
+        "chronyc tracking" readouts, I'm going to whittle it down to what's shown on the clock--"&lt; 1 ms (+3.186µs) - t serv acc (chrony)."  The 
+        entire chrony output will remain elsewhere in <a href='https://kwynn.com/t/20/10/timeserver/chronyraw.php'>raw form</a> and 
+        <a href='https://kwynn.com/t/20/10/timeserver/chronyParsed.php'>JSON</a>.  
+    </p>
+    
+    <p>I'm also going to get rid of all the "Is AWS?" stuff.  That will also have no affect on the user-level, front-end output of the clock.  Earlier 
+        today I created a "1.0" label on the source code linked above.  That was before this probable change.  In the unlikely event someone nearly as 
+        eggheaded as I am wants that data in that form, let me know.  My contact info and web form are linked from my resume, which is in turn linked 
+        from my home page above and is directly linked below.
+     </p>
+    </section>
+        
+<section>
+    <h3>Welcome VeVe users! (2022, early January)</h3>
+
+    <p>In the original version of this page, I asked why the clock had become so (relatively) popular all of a sudden.  I got the following 
+        in response.  I'm paraphrasing a bit and anonymizing.  
+    </p>
+
+    <blockquote>I shared the link with the VeVe collectible crowd. They use it to time
+VeVe's NTF drops. I hope this is a good thing! -- DP
+    </blockquote>
+
+   <p>He's referring to <a href='https://www.veve.me/'>VeVe</a>.  Sure, it's a good thing.  I was just surprised that my fairly tiny web 
+       traffic became much bigger in proportion to "tiny."
+
+   </p>
+</section>
+    
+    <section>
+    <h3>My request to you for more info: why did this become so (relatively) popular in late December, 2021? (solved as above: VeVe)</h3>
     <p>In mid-December, I saw a number of DARPA LifeLog (Facebook) links to my clock.  Then on December 30, the clock was mentioned on a YouTube 
         live chat and / or a YouTube video.  I can see that from my web server access logs, but my brief attempts to dig 
         farther didn't go anywhere.  Around mid-day my time on December 30, something like 115 people used the clock.  A relatively 
@@ -264,10 +279,12 @@ VeVe's NTF drops. I hope this is a good thing! -- DP
         brand new web message form.
     </p>
         </section>
-    
+</section>
+
     <section>
     <h2>page history</h2>
     <ol reversed='reversed' class='phi'>
+        <li>01/18 18:32 - noting change - rm is AWS and most chrony info</li>
         <li>2022/01/14 18:56 EST / UTC -5 -- resolving the traffic mystery with VeVe users</li>
         <li>Last-Modified: Wed, 12 Jan 2022 00:29:46 GMT - first time I officially noted</li>
         <li>probably created somewhat before the above - matter of hours</li>
